@@ -12,8 +12,7 @@
       },
       "android": {
         "buildType": "apk"
-      },
-      "prebuildCommand": "npx expo prebuild --no-install --platform android --skip-dependency-update"
+      }
     },
     "preview": {
       "distribution": "internal",
@@ -22,8 +21,7 @@
       },
       "android": {
         "buildType": "apk"
-      },
-      "prebuildCommand": "npx expo prebuild --no-install --platform android --skip-dependency-update"
+      }
     },
     "production": {
       "autoIncrement": true,
@@ -32,8 +30,7 @@
       },
       "android": {
         "buildType": "apk"
-      },
-      "prebuildCommand": "npx expo prebuild --no-install --platform android --skip-dependency-update"
+      }
     }
   },
   "submit": {
