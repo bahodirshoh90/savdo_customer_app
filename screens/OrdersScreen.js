@@ -86,6 +86,7 @@ export default function OrdersScreen({ navigation }) {
               <Picker.Item label="Jarayonda" value="processing" />
               <Picker.Item label="Bajarildi" value="completed" />
               <Picker.Item label="Bekor qilindi" value="cancelled" />
+              <Picker.Item label="Qaytarilgan" value="returned" />
             </Picker>
           </View>
         </View>

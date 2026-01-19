@@ -20,9 +20,13 @@ export const getOrders = async (status = null, skip = 0, limit = 100) => {
     }
 
     let url = `${API_ENDPOINTS.ORDERS.LIST}?customer_id=${customerId}&skip=${skip}&limit=${limit}`;
-    // Only add status if it's provided and not 'all'
-    if (status && status !== 'all' && status !== null) {
+    // Only add status if it's provided and not 'all' or null
+    // Backend expects None/null for "all orders", not the string "all"
+    if (status && status !== 'all' && status !== null && status !== '') {
       url += `&status=${status}`;
+      console.log('[ORDERS SERVICE] Adding status filter:', status);
+    } else {
+      console.log('[ORDERS SERVICE] No status filter - loading all orders');
     }
 
     console.log('[ORDERS] Request URL:', url);
