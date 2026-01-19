@@ -20,6 +20,7 @@ import Colors from '../constants/colors';
 import { getProducts } from '../services/products';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
+import responsive from '../utils/responsive';
 
 export default function ProductsScreen({ navigation }) {
   const { addToCart, cartItems, removeFromCart, updateQuantity } = useCart();
@@ -129,8 +130,12 @@ export default function ProductsScreen({ navigation }) {
     return item ? item.quantity : 0;
   };
 
+  // Responsive number of columns
+  const numColumns = responsive.isTablet() ? 3 : 2;
+  const itemWidth = responsive.isTablet() ? '32%' : '48%';
+
   const renderProduct = ({ item }) => (
-    <View style={{ flex: 1, marginHorizontal: 4, maxWidth: '48%' }}>
+    <View style={{ flex: 1, marginHorizontal: 4, maxWidth: itemWidth }}>
       <ProductCard
         product={item}
         onPress={handleProductPress}
@@ -175,8 +180,8 @@ export default function ProductsScreen({ navigation }) {
           renderItem={renderProduct}
           keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
           contentContainerStyle={styles.listContent}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
+          numColumns={numColumns}
+          columnWrapperStyle={numColumns > 1 ? styles.row : null}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}
@@ -284,7 +289,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   searchContainer: {
-    padding: 16,
+    padding: responsive.getSpacing(16),
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
