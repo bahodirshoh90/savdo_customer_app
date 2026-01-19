@@ -51,6 +51,7 @@ export default function ProductsScreen({ navigation }) {
   };
 
   const handleProductPress = (product) => {
+    // Navigate within ProductsStack
     navigation.navigate('ProductDetail', { productId: product.id });
   };
 
