@@ -24,30 +24,68 @@ export default function ProductsScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const PRODUCTS_PER_PAGE = 20; // Mahsulotlar bir sahifada
 
-  const loadProducts = async () => {
-    setIsLoading(true);
+  const loadProducts = async (resetPage = false) => {
+    const currentPage = resetPage ? 0 : page;
+    const skip = currentPage * PRODUCTS_PER_PAGE;
+    
+    if (resetPage) {
+      setIsLoading(true);
+      setProducts([]);
+      setPage(0);
+      setHasMore(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+    
     try {
-      const result = await getProducts(searchQuery, 0, 100);
-      setProducts(Array.isArray(result) ? result : []);
+      const result = await getProducts(searchQuery, skip, PRODUCTS_PER_PAGE);
+      const newProducts = Array.isArray(result) ? result : [];
+      
+      if (resetPage) {
+        setProducts(newProducts);
+      } else {
+        setProducts(prev => [...prev, ...newProducts]);
+      }
+      
+      // Agar qaytgan mahsulotlar soni limitdan kam bo'lsa, boshqa sahifa yo'q
+      setHasMore(newProducts.length === PRODUCTS_PER_PAGE);
+      if (resetPage) {
+        setPage(1); // Keyingi yuklash uchun page 1 ga o'rnatiladi
+      } else {
+        setPage(currentPage + 1);
+      }
     } catch (error) {
       console.error('Error loading products:', error);
-      setProducts([]);
+      if (resetPage) {
+        setProducts([]);
+      }
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
       setIsRefreshing(false);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      loadProducts();
+      loadProducts(true); // Reset to first page when screen focused or search changes
     }, [searchQuery])
   );
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await loadProducts();
+    await loadProducts(true);
+  };
+
+  const handleLoadMore = () => {
+    if (!isLoadingMore && hasMore && !isLoading) {
+      loadProducts(false);
+    }
   };
 
   const handleProductPress = (product) => {
@@ -122,6 +160,20 @@ export default function ProductsScreen({ navigation }) {
               colors={[Colors.primary]}
             />
           }
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isLoadingMore ? (
+              <View style={styles.loadingMoreContainer}>
+                <ActivityIndicator size="small" color={Colors.primary} />
+                <Text style={styles.loadingMoreText}>Yuklanmoqda...</Text>
+              </View>
+            ) : !hasMore && products.length > 0 ? (
+              <View style={styles.endContainer}>
+                <Text style={styles.endText}>Barcha mahsulotlar ko'rsatildi</Text>
+              </View>
+            ) : null
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
@@ -172,5 +224,26 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: Colors.textLight,
+  },
+  loadingMoreContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  loadingMoreText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: Colors.textLight,
+  },
+  endContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  endText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    fontStyle: 'italic',
   },
 });
