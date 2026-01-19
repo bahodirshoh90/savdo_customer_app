@@ -11,8 +11,11 @@ import {
   RefreshControl,
   ActivityIndicator,
   TouchableOpacity,
+  Modal,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
+import { Ionicons } from '@expo/vector-icons';
 import Colors from '../constants/colors';
 import { getProducts } from '../services/products';
 import ProductCard from '../components/ProductCard';
@@ -22,6 +25,9 @@ export default function ProductsScreen({ navigation }) {
   const { addToCart, cartItems, removeFromCart, updateQuantity } = useCart();
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState(''); // 'name_asc', 'name_desc', 'price_asc', 'price_desc'
+  const [filterBrand, setFilterBrand] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [page, setPage] = useState(0);
@@ -43,7 +49,14 @@ export default function ProductsScreen({ navigation }) {
     }
     
     try {
-      const result = await getProducts(searchQuery, skip, PRODUCTS_PER_PAGE);
+      // Parse sort parameter for backend
+      let sortParam = '';
+      if (sortBy === 'name_asc') sortParam = 'name_asc';
+      else if (sortBy === 'name_desc') sortParam = 'name_desc';
+      else if (sortBy === 'price_asc') sortParam = 'price_low_asc';
+      else if (sortBy === 'price_desc') sortParam = 'price_high_desc';
+      
+      const result = await getProducts(searchQuery, skip, PRODUCTS_PER_PAGE, filterBrand, '', sortParam);
       const newProducts = Array.isArray(result) ? result : [];
       
       if (resetPage) {
@@ -73,8 +86,8 @@ export default function ProductsScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      loadProducts(true); // Reset to first page when screen focused or search changes
-    }, [searchQuery])
+      loadProducts(true); // Reset to first page when screen focused or filters change
+    }, [searchQuery, sortBy, filterBrand])
   );
 
   const handleRefresh = async () => {
@@ -129,16 +142,27 @@ export default function ProductsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Search */}
+      {/* Search and Filters */}
       <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Mahsulot qidirish..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+        <View style={styles.searchRow}>
+          <TextInput
+            style={[styles.searchInput, { flex: 1 }]}
+            placeholder="Mahsulot qidirish..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => setShowFilters(true)}
+          >
+            <Ionicons name="filter" size={24} color={Colors.primary} />
+            {(sortBy || filterBrand) && (
+              <View style={styles.filterBadge} />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       {isLoading && products.length === 0 ? (
@@ -183,6 +207,73 @@ export default function ProductsScreen({ navigation }) {
           }
         />
       )}
+
+      {/* Filter Modal */}
+      <Modal
+        visible={showFilters}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowFilters(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Filtrlar va Tartiblash</Text>
+              <TouchableOpacity onPress={() => setShowFilters(false)}>
+                <Ionicons name="close" size={24} color={Colors.textDark} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Sort */}
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>Tartiblash</Text>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={sortBy}
+                  onValueChange={(value) => setSortBy(value)}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Tartibsiz" value="" />
+                  <Picker.Item label="Nomi (A-Z)" value="name_asc" />
+                  <Picker.Item label="Nomi (Z-A)" value="name_desc" />
+                  <Picker.Item label="Narx (Pastdan Yuqori)" value="price_asc" />
+                  <Picker.Item label="Narx (Yuqoridan Past)" value="price_desc" />
+                </Picker>
+              </View>
+            </View>
+
+            {/* Brand Filter */}
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>Brend (Keyinchalik)</Text>
+              <TextInput
+                style={styles.filterInput}
+                placeholder="Brend nomi..."
+                value={filterBrand}
+                onChangeText={setFilterBrand}
+              />
+            </View>
+
+            {/* Actions */}
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.clearButton]}
+                onPress={() => {
+                  setSortBy('');
+                  setFilterBrand('');
+                }}
+              >
+                <Text style={styles.clearButtonText}>Tozalash</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.applyButton]}
+                onPress={() => setShowFilters(false)}
+              >
+                <Text style={styles.applyButtonText}>Qo'llash</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -198,6 +289,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   searchInput: {
     backgroundColor: Colors.borderLight,
     borderRadius: 8,
@@ -205,6 +301,106 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: Colors.border,
+  },
+  filterButton: {
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: Colors.borderLight,
+    position: 'relative',
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.danger,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.textDark,
+  },
+  filterSection: {
+    marginBottom: 20,
+  },
+  filterLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.textDark,
+    marginBottom: 8,
+  },
+  pickerWrapper: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: Colors.background,
+  },
+  picker: {
+    height: 50,
+    color: Colors.textDark,
+  },
+  filterInput: {
+    backgroundColor: Colors.background,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 20,
+  },
+  modalButton: {
+    flex: 1,
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  clearButton: {
+    backgroundColor: Colors.borderLight,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  clearButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.textDark,
+  },
+  applyButton: {
+    backgroundColor: Colors.primary,
+  },
+  applyButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.surface,
   },
   listContent: {
     padding: 8,
