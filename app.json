@@ -23,7 +23,8 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#4f46e5"
       },
-      "package": "com.savdo.customerapp"
+      "package": "com.savdo.customerapp",
+      "icon": "./assets/icon.png"
     },
     "web": {
       "bundler": "metro"
