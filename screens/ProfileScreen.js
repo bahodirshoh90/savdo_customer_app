@@ -11,6 +11,7 @@ import {
   Alert,
   ActivityIndicator,
   TextInput,
+  Modal,
 } from 'react-native';
 import { useFocusEffect, CommonActions } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
