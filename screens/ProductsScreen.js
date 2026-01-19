@@ -19,7 +19,7 @@ import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
 
 export default function ProductsScreen({ navigation }) {
-  const { addToCart, cartItems } = useCart();
+  const { addToCart, cartItems, removeFromCart, updateQuantity } = useCart();
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -55,8 +55,22 @@ export default function ProductsScreen({ navigation }) {
     navigation.navigate('ProductDetail', { productId: product.id });
   };
 
-  const handleAddToCart = (product) => {
-    addToCart(product, 1);
+  const handleAddToCart = (product, quantityChange = 1) => {
+    if (quantityChange > 0) {
+      addToCart(product, quantityChange);
+    } else {
+      // Remove or decrease quantity
+      const currentItem = cartItems.find(item => item.product.id === product.id);
+      if (currentItem) {
+        if (currentItem.quantity <= 1) {
+          // Remove from cart
+          removeFromCart(product.id);
+        } else {
+          // Decrease quantity
+          updateQuantity(product.id, currentItem.quantity - 1);
+        }
+      }
+    }
   };
 
   const getCartQuantity = (productId) => {
