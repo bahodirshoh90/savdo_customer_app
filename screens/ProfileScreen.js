@@ -1,0 +1,470 @@
+/**
+ * Profile Screen for Customer App
+ */
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  TextInput,
+} from 'react-native';
+import { useFocusEffect, CommonActions } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
+import Colors from '../constants/colors';
+import api from '../services/api';
+import { API_ENDPOINTS } from '../config/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+export default function ProfileScreen({ navigation }) {
+  const { user, logout } = useAuth();
+  const [customerData, setCustomerData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    address: '',
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCustomerData();
+    }, [])
+  );
+
+  const loadCustomerData = async () => {
+    try {
+      const customerId = await AsyncStorage.getItem('customer_id');
+      if (customerId) {
+        const response = await api.get(API_ENDPOINTS.CUSTOMERS.GET(customerId));
+        setCustomerData(response);
+        setFormData({
+          name: response.name || '',
+          phone: response.phone || '',
+          address: response.address || '',
+        });
+      }
+    } catch (error) {
+      console.error('Error loading customer data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!formData.name.trim()) {
+      Alert.alert('Xatolik', 'Ismni kiriting');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const customerId = await AsyncStorage.getItem('customer_id');
+      if (!customerId) {
+        Alert.alert('Xatolik', 'Mijoz ma\'lumotlari topilmadi. Iltimos, qayta login qiling.');
+        setIsSaving(false);
+        return;
+      }
+
+      console.log('Updating customer with ID:', customerId);
+      console.log('Form data:', formData);
+      
+      const updateData = {
+        name: formData.name.trim(),
+        phone: formData.phone.trim() || null,
+        address: formData.address.trim() || null,
+      };
+      
+      const response = await api.put(API_ENDPOINTS.CUSTOMERS.UPDATE(customerId), updateData);
+      console.log('Update response:', response);
+      
+      Alert.alert('Muvaffaqiyatli', 'Ma\'lumotlar yangilandi');
+      setIsEditing(false);
+      await loadCustomerData();
+    } catch (error) {
+      console.error('Error updating customer:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Ma\'lumotlarni yangilashda xatolik';
+      Alert.alert('Xatolik', errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const performLogout = async () => {
+    console.log('[LOGOUT] Step 1: Starting logout process...');
+    let logoutSuccess = false;
+    let errorMessage = null;
+    
+    const Platform = require('react-native').Platform;
+    const isWeb = Platform.OS === 'web';
+    
+    try {
+      console.log('[LOGOUT] Step 2: Calling logout function from AuthContext...');
+      // Logout first - this will set isAuthenticated to false
+      await logout();
+      logoutSuccess = true;
+      console.log('[LOGOUT] Step 3: Logout function completed successfully');
+    } catch (error) {
+      logoutSuccess = false;
+      errorMessage = error.message || 'Noma\'lum xatolik';
+      console.error('[LOGOUT] Step 3: Logout error:', error);
+      console.error('[LOGOUT] Error details:', {
+        message: error.message,
+        stack: error.stack,
+      });
+      
+      // Show error to user
+      if (isWeb) {
+        alert(`Chiqishda xatolik: ${errorMessage}`);
+      } else {
+        Alert.alert('Xatolik', `Chiqishda xatolik: ${errorMessage}`);
+      }
+    }
+    
+    // Navigation should happen automatically when isAuthenticated changes
+    // But we'll also try manual navigation as backup
+    console.log('[LOGOUT] Step 4: Attempting navigation reset...');
+    let navigationSuccess = false;
+    
+    setTimeout(() => {
+      try {
+        if (navigation) {
+          console.log('[LOGOUT] Step 5: Navigation object available');
+          // Try to get root navigator
+          let rootNav = navigation;
+          try {
+            const parent1 = navigation.getParent?.();
+            console.log('[LOGOUT] First parent exists:', !!parent1);
+            if (parent1) {
+              const parent2 = parent1.getParent?.();
+              console.log('[LOGOUT] Second parent exists:', !!parent2);
+              rootNav = parent2 || parent1 || navigation;
+            }
+          } catch (e) {
+            console.log('[LOGOUT] Could not get parent, using current navigation');
+            console.error('[LOGOUT] Parent error:', e.message);
+          }
+          
+          console.log('[LOGOUT] Step 6: Attempting reset with rootNav');
+          if (rootNav && typeof rootNav.reset === 'function') {
+            rootNav.reset({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
+            navigationSuccess = true;
+            console.log('[LOGOUT] Step 7: Navigation reset completed successfully');
+          } else {
+            console.log('[LOGOUT] Step 6: reset not available, trying CommonActions');
+            try {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'Login' }],
+                })
+              );
+              navigationSuccess = true;
+              console.log('[LOGOUT] Step 7: CommonActions.reset completed successfully');
+            } catch (dispatchError) {
+              console.error('[LOGOUT] CommonActions.reset error:', dispatchError.message);
+              throw dispatchError;
+            }
+          }
+        } else {
+          const errorMsg = 'Navigation obyekti topilmadi';
+          console.error('[LOGOUT] Step 5:', errorMsg);
+          if (!isWeb) {
+            Alert.alert('Xatolik', errorMsg);
+          }
+        }
+      } catch (e) {
+        console.error('[LOGOUT] Navigation error:', e);
+        console.error('[LOGOUT] Error message:', e.message);
+        console.error('[LOGOUT] Error stack:', e.stack);
+        
+        // Show navigation error to user if logout was successful but navigation failed
+        if (logoutSuccess && !navigationSuccess) {
+          const navErrorMsg = `Chiqish muvaffaqiyatli, lekin sahifaga o'tishda xatolik: ${e.message || 'Noma\'lum xatolik'}`;
+          if (isWeb) {
+            alert(navErrorMsg);
+            // Force page reload as last resort
+            window.location.href = '/';
+          } else {
+            Alert.alert('Xatolik', navErrorMsg);
+          }
+        }
+      }
+    }, 200);
+  };
+
+  const handleLogout = async () => {
+    console.log('[LOGOUT] Logout button pressed');
+    
+    // For web platform, use window.confirm instead of Alert.alert for better compatibility
+    const Platform = require('react-native').Platform;
+    const isWeb = Platform.OS === 'web';
+    
+    if (isWeb) {
+      const confirmed = window.confirm('Tizimdan chiqmoqchimisiz?');
+      if (!confirmed) {
+        console.log('[LOGOUT] Logout cancelled by user (web)');
+        return;
+      }
+      console.log('[LOGOUT] User confirmed logout (web)');
+      // For web, perform logout directly
+      performLogout();
+    } else {
+      Alert.alert(
+        'Chiqish',
+        'Tizimdan chiqmoqchimisiz?',
+        [
+          { 
+            text: 'Bekor qilish', 
+            style: 'cancel',
+            onPress: () => {
+              console.log('[LOGOUT] Logout cancelled by user');
+            }
+          },
+          {
+            text: 'Chiqish',
+            style: 'destructive',
+            onPress: () => {
+              console.log('[LOGOUT] User confirmed logout');
+              performLogout();
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Profil</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Shaxsiy ma'lumotlar</Text>
+
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>Ism:</Text>
+          {isEditing ? (
+            <TextInput
+              style={styles.input}
+              value={formData.name}
+              onChangeText={(text) => setFormData({ ...formData, name: text })}
+              placeholder="Ism"
+            />
+          ) : (
+            <Text style={styles.fieldValue}>{customerData?.name || '-'}</Text>
+          )}
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>Telefon:</Text>
+          {isEditing ? (
+            <TextInput
+              style={styles.input}
+              value={formData.phone}
+              onChangeText={(text) => setFormData({ ...formData, phone: text })}
+              placeholder="Telefon"
+              keyboardType="phone-pad"
+            />
+          ) : (
+            <Text style={styles.fieldValue}>{customerData?.phone || '-'}</Text>
+          )}
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>Manzil:</Text>
+          {isEditing ? (
+            <TextInput
+              style={styles.input}
+              value={formData.address}
+              onChangeText={(text) => setFormData({ ...formData, address: text })}
+              placeholder="Manzil"
+              multiline
+            />
+          ) : (
+            <Text style={styles.fieldValue}>{customerData?.address || '-'}</Text>
+          )}
+        </View>
+
+        {isEditing ? (
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
+              onPress={() => {
+                setIsEditing(false);
+                setFormData({
+                  name: customerData?.name || '',
+                  phone: customerData?.phone || '',
+                  address: customerData?.address || '',
+                });
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Bekor qilish</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.button, styles.saveButton, isSaving && styles.saveButtonDisabled]} 
+              onPress={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? (
+                <ActivityIndicator color={Colors.surface} />
+              ) : (
+                <Text style={styles.saveButtonText}>Saqlash</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[styles.button, styles.editButton]}
+            onPress={() => setIsEditing(true)}
+          >
+            <Text style={styles.editButtonText}>Tahrirlash</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Qarz balansi</Text>
+        <Text style={styles.debtAmount}>
+          {customerData?.debt_balance?.toLocaleString('uz-UZ') || '0'} so'm
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Chiqish</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  },
+  header: {
+    backgroundColor: Colors.primary,
+    padding: 24,
+    paddingTop: 40,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: Colors.surface,
+  },
+  section: {
+    backgroundColor: Colors.surface,
+    padding: 20,
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: Colors.border,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.textDark,
+    marginBottom: 16,
+  },
+  field: {
+    marginBottom: 16,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    color: Colors.textLight,
+    marginBottom: 4,
+  },
+  fieldValue: {
+    fontSize: 16,
+    color: Colors.textDark,
+    fontWeight: '500',
+  },
+  input: {
+    backgroundColor: Colors.borderLight,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    color: Colors.textDark,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  editButton: {
+    backgroundColor: Colors.primary,
+  },
+  editButtonText: {
+    color: Colors.surface,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButton: {
+    backgroundColor: Colors.success,
+  },
+  saveButtonText: {
+    color: Colors.surface,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveButtonDisabled: {
+    opacity: 0.6,
+  },
+  cancelButton: {
+    backgroundColor: Colors.border,
+  },
+  cancelButtonText: {
+    color: Colors.textDark,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  debtAmount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.warning,
+  },
+  logoutButton: {
+    backgroundColor: Colors.danger,
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: Colors.surface,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
