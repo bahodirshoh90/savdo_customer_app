@@ -18,6 +18,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { login as authLogin, signup as authSignup } from '../services/auth';
 import Colors from '../constants/colors';
+import api from '../services/api';
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
@@ -34,6 +35,13 @@ export default function LoginScreen({ navigation }) {
   const [signupUsername, setSignupUsername] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [isSigningUp, setIsSigningUp] = useState(false);
+  
+  // Forgot password state
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const handleLogin = async () => {
     // Clear previous error
@@ -198,6 +206,58 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!forgotUsername.trim()) {
+      Alert.alert('Xatolik', 'Foydalanuvchi nomi yoki telefon raqamni kiriting');
+      return;
+    }
+
+    if (!forgotNewPassword.trim() || forgotNewPassword.length < 4) {
+      Alert.alert('Xatolik', 'Yangi parol kamida 4 belgi bo\'lishi kerak');
+      return;
+    }
+
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      Alert.alert('Xatolik', 'Parollar mos kelmayapti');
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      const response = await api.post('/auth/reset-password', {
+        username_or_phone: forgotUsername.trim(),
+        new_password: forgotNewPassword,
+      });
+
+      if (response.success) {
+        Alert.alert(
+          'Muvaffaqiyatli',
+          'Parol muvaffaqiyatli o\'zgartirildi. Endi yangi parol bilan login qiling.',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setShowForgotPassword(false);
+                setForgotUsername('');
+                setForgotNewPassword('');
+                setForgotConfirmPassword('');
+                // Set username in login form
+                setUsername(forgotUsername.trim());
+                setPassword('');
+              },
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Reset password error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Parolni tiklashda xatolik';
+      Alert.alert('Xatolik', errorMessage);
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -243,6 +303,13 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.errorText}>{errorMessage}</Text>
             </View>
           ) : null}
+
+          <TouchableOpacity
+            onPress={() => setShowForgotPassword(true)}
+            style={styles.forgotPasswordLink}
+          >
+            <Text style={styles.forgotPasswordText}>Parolni unutdingizmi?</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
@@ -344,6 +411,86 @@ export default function LoginScreen({ navigation }) {
                     <ActivityIndicator color={Colors.surface} />
                   ) : (
                     <Text style={styles.signupButtonText}>Ro'yxatdan o'tish</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Forgot Password Modal */}
+      <Modal
+        visible={showForgotPassword}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowForgotPassword(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View style={styles.modalContent}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Parolni tiklash</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowForgotPassword(false);
+                    setForgotUsername('');
+                    setForgotNewPassword('');
+                    setForgotConfirmPassword('');
+                  }}
+                  style={styles.closeButton}
+                >
+                  <Text style={styles.closeButtonText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.signupForm}>
+                <Text style={styles.infoText}>
+                  Foydalanuvchi nomi yoki telefon raqamingizni kiriting va yangi parol o'rnating.
+                </Text>
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Foydalanuvchi nomi yoki telefon *"
+                  value={forgotUsername}
+                  onChangeText={setForgotUsername}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="default"
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Yangi parol * (kamida 4 ta belgi)"
+                  value={forgotNewPassword}
+                  onChangeText={setForgotNewPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Yangi parolni tasdiqlash *"
+                  value={forgotConfirmPassword}
+                  onChangeText={setForgotConfirmPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+
+                <TouchableOpacity
+                  style={[styles.signupButton, isResettingPassword && styles.signupButtonDisabled]}
+                  onPress={handleResetPassword}
+                  disabled={isResettingPassword}
+                >
+                  {isResettingPassword ? (
+                    <ActivityIndicator color={Colors.surface} />
+                  ) : (
+                    <Text style={styles.signupButtonText}>Parolni tiklash</Text>
                   )}
                 </TouchableOpacity>
               </View>
@@ -488,5 +635,20 @@ const styles = StyleSheet.create({
     color: Colors.surface,
     fontSize: 16,
     fontWeight: '600',
+  },
+  forgotPasswordLink: {
+    marginTop: 8,
+    alignItems: 'flex-end',
+  },
+  forgotPasswordText: {
+    color: Colors.primary,
+    fontSize: 14,
+    textDecorationLine: 'underline',
+  },
+  infoText: {
+    fontSize: 14,
+    color: Colors.textLight,
+    marginBottom: 16,
+    lineHeight: 20,
   },
 });
