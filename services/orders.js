@@ -89,6 +89,7 @@ export const createOrder = async (orderData) => {
       seller_id: parseInt(sellerId, 10),
       items: items,
       is_offline: false,
+      payment_method: orderData.payment_method || 'cash', // cash, card, debt
     };
 
     console.log('[ORDERS] ===== CREATING ORDER =====');
