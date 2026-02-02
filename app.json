@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mijozlar Ilovasi",
     "slug": "savdo-customer-app",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
@@ -14,20 +14,57 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.savdo.customerapp"
+      "bundleIdentifier": "com.savdo.customerapp",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Kamera ruxsati QR kod va barcode skan qilish uchun kerak."
+      }
     },
     "android": {
       "package": "com.savdo.customerapp",
       "adaptiveIcon": {
         "backgroundColor": "#4f46e5"
+      },
+      "permissions": [
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "com.android.alarm.permission.SET_ALARM",
+        "CAMERA",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+        
+      ],
+      "notification": {
+        "icon": "./assets/notification-icon.png",
+        "color": "#4f46e5",
+        "sound": true,
+        "androidMode": "default",
+        "androidCollapsedTitle": "Yangi xabar"
       }
     },
     "web": {
       "bundler": "metro"
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#4f46e5",
+          "sounds": [],
+          "mode": "production"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Kamera ruxsati QR kod va barcode skan qilish uchun kerak."
+        }
+      ]
+      ],
+    "scheme": "savdo",
     "extra": {
       "eas": {
-        "projectId": "ea4b267c-a627-404a-a062-2ed13042ef22"
+        "projectId": "3cd8a367-c38b-4e0c-ac1e-dac56c10d779"
       }
     }
   }

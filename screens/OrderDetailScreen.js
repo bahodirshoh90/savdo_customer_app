@@ -11,7 +11,11 @@ import {
   Alert,
 } from 'react-native';
 import Colors from '../constants/colors';
+import { useTheme } from '../context/ThemeContext';
 import { getOrder } from '../services/orders';
+import OrderTrackingStepper from '../components/OrderTrackingStepper';
+import websocketService from '../services/websocket';
+import Footer from '../components/Footer';
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -40,6 +44,19 @@ export default function OrderDetailScreen({ route }) {
 
   useEffect(() => {
     loadOrder();
+    
+    // Subscribe to order status updates via WebSocket
+    const handleStatusUpdate = (data) => {
+      if (data.order_id === orderId) {
+        setOrder(prev => prev ? { ...prev, status: data.status } : null);
+      }
+    };
+
+    websocketService.on('order_status_update', handleStatusUpdate);
+
+    return () => {
+      websocketService.off('order_status_update', handleStatusUpdate);
+    };
   }, [orderId]);
 
   const loadOrder = async () => {
@@ -83,8 +100,21 @@ export default function OrderDetailScreen({ route }) {
       })
     : '-';
 
+  // Calculate estimated delivery (3 days from order date for processing orders)
+  const estimatedDelivery = order.status === 'processing' && order.created_at
+    ? new Date(new Date(order.created_at).getTime() + 3 * 24 * 60 * 60 * 1000)
+    : null;
+
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      {/* Order Tracking Stepper */}
+      <OrderTrackingStepper
+        currentStatus={order.status}
+        orderDate={order.created_at}
+        estimatedDelivery={estimatedDelivery}
+      />
+
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.orderId}>Buyurtma #{order.id}</Text>
@@ -136,7 +166,9 @@ export default function OrderDetailScreen({ route }) {
           </Text>
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+      <Footer currentScreen="orders" />
+    </View>
   );
 }
 
@@ -144,6 +176,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
   },
   loadingContainer: {
     flex: 1,

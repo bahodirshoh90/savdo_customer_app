@@ -1,13 +1,15 @@
 /**
  * Main App Component for Customer App
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View, StyleSheet, Platform, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { initializeNotifications, removeNotificationListeners } from './services/notifications';
+import { useAuth } from './context/AuthContext';
 
 // Import screens
 import LoginScreen from './screens/LoginScreen';
@@ -18,10 +20,25 @@ import CartScreen from './screens/CartScreen';
 import OrdersScreen from './screens/OrdersScreen';
 import OrderDetailScreen from './screens/OrderDetailScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import FavoritesScreen from './screens/FavoritesScreen';
+import CompareProductsScreen from './screens/CompareProductsScreen';
+import QRScannerScreen from './screens/QRScannerScreen';
+import ChatListScreen from './screens/ChatListScreen';
+import ChatScreen from './screens/ChatScreen';
+import NewChatScreen from './screens/NewChatScreen';
+import PriceAlertsScreen from './screens/PriceAlertsScreen';
+import DashboardScreen from './screens/DashboardScreen';
+import PaymentHistoryScreen from './screens/PaymentHistoryScreen';
+import ReferalScreen from './screens/ReferalScreen';
+import LoyaltyScreen from './screens/LoyaltyScreen';
 
 // Import context
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider} from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
+import { ToastProvider } from './context/ToastContext';
+import { AppSettingsProvider } from './context/AppSettingsContext';
 import Colors from './constants/colors';
 
 const Stack = createStackNavigator();
@@ -82,6 +99,11 @@ function ProductsStack() {
         component={ProductDetailScreen}
         options={{ title: 'Mahsulot detallari' }}
       />
+      <Stack.Screen
+        name="CompareProducts"
+        component={CompareProductsScreen}
+        options={{ title: 'Mahsulotlarni Taqqoslash' }}
+      />
     </Stack.Navigator>
   );
 }
@@ -94,8 +116,7 @@ function MainTabs() {
         tabBarInactiveTintColor: Colors.textLight,
         headerShown: false,
         tabBarStyle: {
-          borderTopWidth: 1,
-          borderTopColor: Colors.border,
+          display: 'none', // Hide Tab Navigator's tabBar, use Footer component instead
         },
       }}
     >
@@ -155,23 +176,45 @@ function MainTabs() {
 
 function AppNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { colors } = useTheme();
+  const { t } = useLanguage();
+  const navigationRef = useRef(null);
+  const notificationSubscriptionsRef = useRef(null);
+
+  useEffect(() => {
+    // Initialize notifications when user is authenticated
+    if (isAuthenticated && !isLoading) {
+      initializeNotifications(navigationRef.current).then((result) => {
+        if (result) {
+          notificationSubscriptionsRef.current = result.subscriptions;
+        }
+      });
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      if (notificationSubscriptionsRef.current) {
+        removeNotificationListeners(notificationSubscriptionsRef.current);
+      }
+    };
+  }, [isAuthenticated, isLoading]);
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: {
-            backgroundColor: Colors.primary,
+            backgroundColor: colors.primary,
           },
-          headerTintColor: Colors.surface,
+          headerTintColor: colors.surface,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
@@ -195,6 +238,51 @@ function AppNavigator() {
               component={OrderDetailScreen}
               options={{ title: 'Buyurtma detallari' }}
             />
+            <Stack.Screen
+              name="QRScanner"
+              component={QRScannerScreen}
+              options={{ title: 'QR Kod Skaner', headerShown: false }}
+            />
+            <Stack.Screen
+              name="ChatList"
+              component={ChatListScreen}
+              options={{ title: t('support') || 'Yordam', headerShown: false }}
+            />
+            <Stack.Screen
+              name="Chat"
+              component={ChatScreen}
+              options={{ title: t('chat') || 'Suhbat', headerShown: false }}
+            />
+            <Stack.Screen
+              name="NewChat"
+              component={NewChatScreen}
+              options={{ title: t('new_chat') || 'Yangi suhbat', headerShown: false }}
+            />
+            <Stack.Screen
+              name="PriceAlerts"
+              component={PriceAlertsScreen}
+              options={{ title: 'Narx Eslatmalari' }}
+            />
+            <Stack.Screen
+              name="PriceAlertCreate"
+              component={PriceAlertsScreen}
+              options={{ title: 'Narx Eslatmasi Qo\'shish' }}
+            />
+            <Stack.Screen
+              name="PaymentHistory"
+              component={PaymentHistoryScreen}
+              options={{ title: 'To\'lov Tarixi' }}
+            />
+            <Stack.Screen
+              name="Favorites"
+              component={FavoritesScreen}
+              options={{ title: 'Sevimli Mahsulotlar' }}
+            />
+            <Stack.Screen
+              name="Dashboard"
+              component={DashboardScreen}
+              options={{ title: 'Statistika' }}
+            />
           </>
         )}
       </Stack.Navigator>
@@ -204,12 +292,20 @@ function AppNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <AppNavigator />
-        <StatusBar style="auto" />
-      </CartProvider>
-    </AuthProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <AppSettingsProvider>
+              <CartProvider>
+                <AppNavigator />
+                <StatusBar style="auto" />
+              </CartProvider>
+            </AppSettingsProvider>
+          </AuthProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 
@@ -218,6 +314,5 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
   },
 });
