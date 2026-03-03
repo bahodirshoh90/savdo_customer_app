@@ -49,6 +49,15 @@ import Colors from './constants/colors';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+import Constants from 'expo-constants';
+import MapboxGL from '@rnmapbox/maps';
+
+// EAS secrets orqali olingan token
+const MAPBOX_TOKEN = Constants.manifest.extra.mapboxToken;
+
+// Mapbox-ni init qilish
+MapboxGL.setAccessToken(MAPBOX_TOKEN);
+
 function StatusBarWrapper() {
   const { colors, isDark } = useTheme();
   return (

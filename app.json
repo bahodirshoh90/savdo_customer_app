@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mijozlar Ilovasi",
     "slug": "savdo-customer-app",
-    "version": "1.0.5",
+    "version": "1.0.7",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
@@ -11,9 +11,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#4f46e5"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.savdo.customerapp",
@@ -24,7 +22,7 @@
     },
     "android": {
       "package": "com.savdo.customerapp",
-      "versionCode": 6,
+      "versionCode": 8,
       "googleServicesFile": "./android/app/google-services.json",
       "icon": "./assets/icon.png",
       "adaptiveIcon": {
@@ -52,40 +50,23 @@
         {
           "icon": "./assets/notification-icon.png",
           "color": "#4f46e5",
-          "sounds": [
-            "./assets/notification-sound.wav"
-          ],
+          "sounds": ["./assets/notification-sound.wav"],
           "mode": "production"
         }
       ],
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "compileSdkVersion": 34,
-            "targetSdkVersion": 34,
-            "buildToolsVersion": "34.0.0"
-          }
-        }
-      ],
-      [
-        "@rnmapbox/maps"
-        ],
+      ["expo-build-properties", { "android": { "compileSdkVersion": 34, "targetSdkVersion": 34, "buildToolsVersion": "34.0.0" } }],
+      ["@rnmapbox/maps"],
       "expo-web-browser"
     ],
     "scheme": "savdo",
-    "extra": {       
-      "mapboxToken": process.env.RNMAPBOX_MAPS_DOWNLOAD_TOKEN,
+    "extra": {
+      "mapboxToken": "MAPBOX_TOKEN_PLACEHOLDER",
       "eas": {
         "projectId": "4adf9f5a-a6a0-4a18-9777-0f3444942f92"
       }
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    },
+    "updates": { "fallbackToCacheTimeout": 0 },
+    "runtimeVersion": { "policy": "sdkVersion" },
     "owner": "bahodirjon9009"
   }
 }

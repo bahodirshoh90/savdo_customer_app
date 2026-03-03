@@ -1,6 +1,6 @@
 /**
  * Language Context for Customer App
- * Provides multi-language support with Uzbek and Russian
+ * Provides multi-language support with Uzbek, Russian, and English
  */
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -23,7 +23,7 @@ const translations = {
     filter: 'Filtr',
     sort: 'Tartiblash',
     all: 'Barchasi',
-    
+
     // Navigation
     home: 'Bosh sahifa',
     products: 'Mahsulotlar',
@@ -31,7 +31,7 @@ const translations = {
     orders: 'Buyurtmalar',
     profile: 'Profil',
     favorites: 'Sevimlilar',
-    
+
     // Products
     productsList: 'Mahsulotlar ro\'yxati',
     productDetail: 'Mahsulot detallari',
@@ -44,14 +44,14 @@ const translations = {
     reviews: 'Baholashlar',
     rating: 'Baholash',
     compare: 'Taqqoslash',
-    
+
     // Cart
     cartItems: 'Savatchadagi mahsulotlar',
     quantity: 'Miqdor',
     total: 'Jami',
     checkout: 'Buyurtma berish',
     emptyCart: 'Savatcha bo\'sh',
-    
+
     // Orders
     ordersList: 'Buyurtmalar ro\'yxati',
     orderDetail: 'Buyurtma detallari',
@@ -62,20 +62,19 @@ const translations = {
     processing: 'Jarayonda',
     completed: 'Bajarildi',
     cancelled: 'Bekor qilindi',
-    
+
     // Profile
     profileSettings: 'Profil sozlamalari',
     darkMode: 'Qorong\'u rejim',
     language: 'Til',
     logout: 'Chiqish',
     login: 'Kirish',
-    
+
     // Reviews
     writeReview: 'Baholash yozish',
     ratingRequired: 'Baholash kerak',
     comment: 'Sharh',
     submit: 'Yuborish',
-    send: 'Yuborish',
     helpful: 'Foydali',
     verifiedPurchase: 'Tasdiqlangan xarid',
     support: 'Yordam',
@@ -96,6 +95,7 @@ const translations = {
     light: 'Yorug\'lik',
     langUz: 'O\'zbek',
     langRu: 'Русский',
+    langEn: 'English',
     welcome: 'Xush kelibsiz',
     allProducts: 'Barcha mahsulotlarni ko\'rish',
     mostSold: 'Eng ko\'p sotilgan',
@@ -111,17 +111,8 @@ const translations = {
     bonusBall: 'Ballaringiz',
     quickAccess: 'Tezkor kirish',
     addProduct: 'Yana mahsulot qo\'shish',
-    reports: 'Hisobotlar',
-    sessionExpired: 'Sessiya tugadi',
-    pleaseLoginAgain: 'Iltimos, qayta kiring.',
-    reLogin: 'Qayta kirish',
-    activeSessions: 'Faol sessiyalar',
-    closeAllSessions: 'Barcha sessiyalarni yopish',
-    device: 'Qurilma',
-    lastActive: 'Oxirgi faollik',
-    currentDevice: 'Joriy qurilma',
-    personalTags: 'Shaxsiy teglar',
   },
+
   ru: {
     // Common
     loading: 'Загрузка...',
@@ -136,7 +127,7 @@ const translations = {
     filter: 'Фильтр',
     sort: 'Сортировка',
     all: 'Все',
-    
+
     // Navigation
     home: 'Главная',
     products: 'Товары',
@@ -144,7 +135,7 @@ const translations = {
     orders: 'Заказы',
     profile: 'Профиль',
     favorites: 'Избранное',
-    
+
     // Products
     productsList: 'Список товаров',
     productDetail: 'Детали товара',
@@ -157,14 +148,14 @@ const translations = {
     reviews: 'Отзывы',
     rating: 'Рейтинг',
     compare: 'Сравнить',
-    
+
     // Cart
     cartItems: 'Товары в корзине',
     quantity: 'Количество',
     total: 'Итого',
     checkout: 'Оформить заказ',
     emptyCart: 'Корзина пуста',
-    
+
     // Orders
     ordersList: 'Список заказов',
     orderDetail: 'Детали заказа',
@@ -175,22 +166,21 @@ const translations = {
     processing: 'В обработке',
     completed: 'Выполнено',
     cancelled: 'Отменено',
-    
+
     // Profile
     profileSettings: 'Настройки профиля',
     darkMode: 'Тёмный режим',
     language: 'Язык',
     logout: 'Выйти',
     login: 'Войти',
-    
+
     // Reviews
     writeReview: 'Написать отзыв',
     ratingRequired: 'Требуется рейтинг',
     comment: 'Комментарий',
     submit: 'Отправить',
-    send: 'Отправить',
     helpful: 'Полезно',
-    verifiedPurchase: 'Подтвержденная покупка',
+    verifiedPurchase: 'Подтверждённая покупка',
     support: 'Поддержка',
     chat: 'Чат',
     new_chat: 'Новый чат',
@@ -209,6 +199,7 @@ const translations = {
     light: 'Светлая',
     langUz: 'O\'zbek',
     langRu: 'Русский',
+    langEn: 'English',
     welcome: 'Добро пожаловать',
     allProducts: 'Все товары',
     mostSold: 'Популярные',
@@ -224,18 +215,115 @@ const translations = {
     bonusBall: 'Ваши баллы',
     quickAccess: 'Быстрый доступ',
     addProduct: 'Добавить товар',
-    reports: 'Отчёты',
-    sessionExpired: 'Сессия истекла',
-    pleaseLoginAgain: 'Пожалуйста, войдите снова.',
-    reLogin: 'Войти снова',
-    activeSessions: 'Активные сессии',
-    closeAllSessions: 'Закрыть все сессии',
-    device: 'Устройство',
-    lastActive: 'Последняя активность',
-    currentDevice: 'Текущее устройство',
-    personalTags: 'Личные теги',
+  },
+
+  en: {
+    // Common
+    loading: 'Loading...',
+    error: 'Error',
+    success: 'Success',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+    save: 'Save',
+    delete: 'Delete',
+    edit: 'Edit',
+    search: 'Search',
+    filter: 'Filter',
+    sort: 'Sort',
+    all: 'All',
+
+    // Navigation
+    home: 'Home',
+    products: 'Products',
+    cart: 'Cart',
+    orders: 'Orders',
+    profile: 'Profile',
+    favorites: 'Favorites',
+
+    // Products
+    productsList: 'Products List',
+    productDetail: 'Product Details',
+    addToCart: 'Add to Cart',
+    outOfStock: 'Out of Stock',
+    inStock: 'In Stock',
+    price: 'Price',
+    brand: 'Brand',
+    category: 'Category',
+    reviews: 'Reviews',
+    rating: 'Rating',
+    compare: 'Compare',
+
+    // Cart
+    cartItems: 'Cart Items',
+    quantity: 'Quantity',
+    total: 'Total',
+    checkout: 'Checkout',
+    emptyCart: 'Cart is empty',
+
+    // Orders
+    ordersList: 'Orders List',
+    orderDetail: 'Order Details',
+    orderNumber: 'Order Number',
+    orderStatus: 'Order Status',
+    orderDate: 'Order Date',
+    pending: 'Pending',
+    processing: 'Processing',
+    completed: 'Completed',
+    cancelled: 'Cancelled',
+
+    // Profile
+    profileSettings: 'Profile Settings',
+    darkMode: 'Dark Mode',
+    language: 'Language',
+    logout: 'Logout',
+    login: 'Login',
+
+    // Reviews
+    writeReview: 'Write a Review',
+    ratingRequired: 'Rating required',
+    comment: 'Comment',
+    submit: 'Submit',
+    helpful: 'Helpful',
+    verifiedPurchase: 'Verified Purchase',
+    support: 'Support',
+    chat: 'Chat',
+    new_chat: 'New Chat',
+    personalInfo: 'Personal Info',
+    theme: 'Theme',
+    security: 'Security',
+    helpAndNotif: 'Help & Notifications',
+    debtBalance: 'Debt Balance',
+    changePassword: 'Change Password',
+    priceAlerts: 'Price Alerts',
+    name: 'Name',
+    phone: 'Phone',
+    address: 'Address',
+    system: 'System',
+    dark: 'Dark',
+    light: 'Light',
+    langUz: 'O\'zbek',
+    langRu: 'Русский',
+    langEn: 'English',
+    welcome: 'Welcome',
+    allProducts: 'View All Products',
+    mostSold: 'Best Sellers',
+    topProducts: 'Top Products',
+    seasonal: 'Seasonal',
+    seasonalHint: 'Seasonal picks',
+    onSale: 'On Sale',
+    saleHint: 'Discounts',
+    bonusFriends: 'Bonus & Friends',
+    referFriend: 'Refer a Friend',
+    bonusHint: 'Earn bonus',
+    bonusSystem: 'Bonus System',
+    bonusBall: 'Your Points',
+    quickAccess: 'Quick Access',
+    addProduct: 'Add Another Product',
   },
 };
+
+// Helper to validate supported languages
+const SUPPORTED_LANGUAGES = ['uz', 'ru', 'en'];
 
 export const LanguageProvider = ({ children }) => {
   const [language, setLanguage] = useState('uz');
@@ -248,22 +336,21 @@ export const LanguageProvider = ({ children }) => {
   const loadLanguage = async () => {
     try {
       const savedLanguage = await AsyncStorage.getItem('app_language');
-      if (savedLanguage && (savedLanguage === 'uz' || savedLanguage === 'ru')) {
+      if (savedLanguage && SUPPORTED_LANGUAGES.includes(savedLanguage)) {
         setLanguage(savedLanguage);
       } else {
-        // Default to Uzbek
-        setLanguage('uz');
+        setLanguage('uz'); // Default to Uzbek
       }
     } catch (error) {
       console.error('Error loading language:', error);
-      setLanguage('uz'); // Default to Uzbek
+      setLanguage('uz');
     } finally {
       setIsLoading(false);
     }
   };
 
   const changeLanguage = async (lang) => {
-    if (lang !== 'uz' && lang !== 'ru') {
+    if (!SUPPORTED_LANGUAGES.includes(lang)) {
       console.warn('Invalid language:', lang);
       return;
     }
@@ -278,12 +365,12 @@ export const LanguageProvider = ({ children }) => {
 
   const t = (key, params = {}) => {
     let translation = translations[language]?.[key] || key;
-    
+
     // Replace parameters in translation
     Object.keys(params).forEach(param => {
       translation = translation.replace(`{${param}}`, params[param]);
     });
-    
+
     return translation;
   };
 
@@ -292,6 +379,7 @@ export const LanguageProvider = ({ children }) => {
     changeLanguage,
     t,
     isLoading,
+    supportedLanguages: SUPPORTED_LANGUAGES,
   };
 
   return (

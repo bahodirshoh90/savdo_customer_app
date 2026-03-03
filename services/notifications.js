@@ -92,7 +92,7 @@ export async function getExpoPushToken() {
     }
 
     // ✅ Hardcoded projectId
-    const projectId = '4adf9f5a-a6a0-4a18-9777-0f3444942f92';
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId || '4adf9f5a-a6a0-4a18-9777-0f3444942f92';
     console.log('[NOTIFICATIONS] Using projectId:', projectId);
 
     // Try to get token
@@ -427,5 +427,44 @@ export async function sendTestNotification() {
   } catch (error) {
     console.error('[NOTIFICATIONS] ❌ Error sending test notification:', error);
     return false;
+  }
+}
+
+/**
+ * Get stored push token from AsyncStorage
+ */
+export async function getStoredPushToken() {
+  try {
+    return await AsyncStorage.getItem('expo_push_token');
+  } catch (error) {
+    console.error('[NOTIFICATIONS] ❌ getStoredPushToken error:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Save WebSocket notification to local storage
+ */
+export async function saveWebSocketNotification({ type, title, body, data = {} }) {
+  try {
+    const notificationsJson = await AsyncStorage.getItem('local_notifications');
+    const notifications = notificationsJson ? JSON.parse(notificationsJson) : [];
+
+    const notificationData = {
+      id: `ws_${Date.now()}`,
+      title: title || 'Bildirishnoma',
+      body: body || '',
+      data: { type, ...data },
+      date: new Date().toISOString(),
+      read: false,
+    };
+
+    notifications.unshift(notificationData);
+    if (notifications.length > 100) notifications.splice(100);
+
+    await AsyncStorage.setItem('local_notifications', JSON.stringify(notifications));
+    console.log('[NOTIFICATIONS] 💾 WebSocket notification saved to storage');
+  } catch (error) {
+    console.error('[NOTIFICATIONS] ❌ saveWebSocketNotification error:', error.message);
   }
 }
