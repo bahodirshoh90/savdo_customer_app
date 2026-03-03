@@ -24,7 +24,7 @@
     },
     "android": {
       "package": "com.savdo.customerapp",
-      "versionCode": 5,
+      "versionCode": 6,
       "googleServicesFile": "./android/app/google-services.json",
       "icon": "./assets/icon.png",
       "adaptiveIcon": {
@@ -69,15 +69,13 @@
         }
       ],
       [
-        "@rnmapbox/maps",
-        {
-          "RNMapboxMapsDownloadToken": "sk.eyJ1IjoiYmFob2RpcnNob2g5MCIsImEiOiJjbW05dm82cnMwNmZ2MnBzN2U5bWp0MXZhIn0.y7QXbxoRCi7mInl4GgCxGg"
-        }
-      ],
+        "@rnmapbox/maps"
+        ],
       "expo-web-browser"
     ],
     "scheme": "savdo",
-    "extra": {
+    "extra": {       
+      "mapboxToken": process.env.RNMAPBOX_MAPS_DOWNLOAD_TOKEN,
       "eas": {
         "projectId": "4adf9f5a-a6a0-4a18-9777-0f3444942f92"
       }
