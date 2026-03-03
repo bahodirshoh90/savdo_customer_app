@@ -1,0 +1,93 @@
+{
+  "expo": {
+    "name": "Mijozlar Ilovasi",
+    "slug": "savdo-customer-app",
+    "version": "1.0.5",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#4f46e5"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.savdo.customerapp",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Mahsulot rasmlarini yuklash uchun rasm kutubxonasiga kirish kerak",
+        "NSCameraUsageDescription": "Mahsulot rasmlarini olish uchun kameraga kirish kerak"
+      }
+    },
+    "android": {
+      "package": "com.savdo.customerapp",
+      "versionCode": 5,
+      "googleServicesFile": "./android/app/google-services.json",
+      "icon": "./assets/icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#4f46e5"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#4f46e5",
+          "sounds": [
+            "./assets/notification-sound.wav"
+          ],
+          "mode": "production"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
+          }
+        }
+      ],
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsDownloadToken": "sk.eyJ1IjoiYmFob2RpcnNob2g5MCIsImEiOiJjbW05dm82cnMwNmZ2MnBzN2U5bWp0MXZhIn0.y7QXbxoRCi7mInl4GgCxGg"
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "scheme": "savdo",
+    "extra": {
+      "eas": {
+        "projectId": "4adf9f5a-a6a0-4a18-9777-0f3444942f92"
+      }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "owner": "bahodirjon9009"
+  }
+}
