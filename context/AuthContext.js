@@ -324,12 +324,15 @@ export const AuthProvider = ({ children }) => {
     setHasPin(false);
     setIsUnlocked(false);
     try {
-      await pinService.clearPin();
-      await authLogout(async () => {
-        const token = await getStoredPushToken();
-        if (token) await unregisterDeviceToken(token);
-      });
-    } catch (e) {
+  await pinService.clearPin();
+  try {
+    const token = await getStoredPushToken();
+    if (token) await unregisterDeviceToken(token);
+  } catch (pushErr) {
+    console.warn('[AUTH CONTEXT] Push unregister error:', pushErr);
+  }
+  await authLogout();
+} catch (e) {
       console.warn('[AUTH CONTEXT] Logout error:', e);
     } finally {
       setUser(null);
@@ -367,13 +370,12 @@ export const AuthProvider = ({ children }) => {
     setHasPin(false);
     setIsUnlocked(false);
     try {
-      await authLogout(async () => {
-        const token = await getStoredPushToken();
-        if (token) await unregisterDeviceToken(token);
-      });
-    } catch (e) {
-      console.warn('[AUTH CONTEXT] Pin lockout logout error:', e);
-    }
+  const token = await getStoredPushToken();
+  if (token) await unregisterDeviceToken(token);
+} catch (pushErr) {
+  console.warn('[AUTH CONTEXT] Push unregister error:', pushErr);
+}
+await authLogout();
     setUser(null);
     setIsAuthenticated(false);
     websocketService.disconnect();
