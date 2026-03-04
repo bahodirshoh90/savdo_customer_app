@@ -145,11 +145,18 @@ export async function setPin(pin) {
 
 export async function verifyPin(pin) {
   const stored = await getStoredPinHash();
-  if (!stored) return false;
   const salt = await getStoredSalt();
+  
+  // DEBUG — o'chirishni unutmang production da
+  console.log('[PIN_VERIFY] stored hash exists:', !!stored);
+  console.log('[PIN_VERIFY] salt exists:', !!salt);
+  
+  if (!stored) return false;
   if (!salt) return false;
   const hash = await hashPinWithSalt(pin, salt);
-  return hash === stored;
+  const result = hash === stored;
+  console.log('[PIN_VERIFY] result:', result);
+  return result;
 }
 
 export async function hasPin() {
