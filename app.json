@@ -11,7 +11,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#4f46e5"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.savdo.customerapp",
@@ -50,23 +52,40 @@
         {
           "icon": "./assets/notification-icon.png",
           "color": "#4f46e5",
-          "sounds": ["./assets/notification-sound.wav"],
+          "sounds": [
+            "./assets/notification-sound.wav"
+          ],
           "mode": "production"
         }
       ],
-      ["expo-build-properties", { "android": { "compileSdkVersion": 34, "targetSdkVersion": 34, "buildToolsVersion": "34.0.0" } }],
-      ["@rnmapbox/maps"],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "buildToolsVersion": "34.0.0"
+          }
+        }
+      ],
+      [
+        "@rnmapbox/maps"
+      ],
       "expo-web-browser"
     ],
     "scheme": "savdo",
     "extra": {
       "mapboxToken": "MAPBOX_TOKEN_PLACEHOLDER",
       "eas": {
-        "projectId": "4adf9f5a-a6a0-4a18-9777-0f3444942f92"
+        "projectId": "ea4b267c-a627-404a-a062-2ed13042ef22"
       }
     },
-    "updates": { "fallbackToCacheTimeout": 0 },
-    "runtimeVersion": { "policy": "sdkVersion" },
-    "owner": "bahodirjon9009"
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "owner": "bahodirjon0990"
   }
 }

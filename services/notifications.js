@@ -92,7 +92,7 @@ export async function getExpoPushToken() {
     }
 
     // ✅ Hardcoded projectId
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId || '4adf9f5a-a6a0-4a18-9777-0f3444942f92';
+    const projectId = 'ea4b267c-a627-404a-a062-2ed13042ef22';
     console.log('[NOTIFICATIONS] Using projectId:', projectId);
 
     // Try to get token
