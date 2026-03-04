@@ -365,21 +365,24 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const pinLockout = useCallback(async () => {
-    await pinService.clearPin();
-    setShowPinSetup(false);
-    setHasPin(false);
-    setIsUnlocked(false);
-    try {
-  const token = await getStoredPushToken();
-  if (token) await unregisterDeviceToken(token);
-} catch (pushErr) {
-  console.warn('[AUTH CONTEXT] Push unregister error:', pushErr);
-}
-await authLogout();
+  await pinService.clearPin();
+  setShowPinSetup(false);
+  setHasPin(false);
+  setIsUnlocked(false);
+  try {
+    const token = await getStoredPushToken();
+    if (token) await unregisterDeviceToken(token);
+  } catch (pushErr) {
+    console.warn('[AUTH CONTEXT] Push unregister error:', pushErr);
+  }
+  try {
+    await authLogout();
+  } finally {
     setUser(null);
     setIsAuthenticated(false);
     websocketService.disconnect();
-  }, []);
+  }
+}, []);
 
   return (
     <AuthContext.Provider

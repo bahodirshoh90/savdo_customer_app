@@ -112,32 +112,30 @@ async function getStoredPinHash() {
 }
 
 export async function setPin(pin) {
-  const hash = await hashPin(pin);
+  const salt = `${Math.random().toString(36).slice(2)}${Date.now()}`;
+
+  if (Platform.OS === 'web') {
+    try {
+      globalThis.localStorage?.setItem(PIN_SALT_KEY, salt);
+    } catch {}
+  } else {
+    if (SecureStore) {
+      try { await SecureStore.setItemAsync(PIN_SALT_KEY, salt); } catch {}
+    }
+    try { await AsyncStorage.setItem(PIN_SALT_KEY, salt); } catch {}
+  }
+
+  const hash = await hashPinWithSalt(pin, salt);
 
   if (Platform.OS === 'web') {
     try {
       globalThis.localStorage?.setItem(PIN_HASH_KEY, hash);
-    } catch {
-      // ignore
-    }
-  } else if (SecureStore) {
-    try {
-      await SecureStore.setItemAsync(PIN_HASH_KEY, hash);
-    } catch (e) {
-      console.warn('[PIN] SecureStore setItemAsync error, falling back to AsyncStorage:', e);
-    }
-    try {
-      await AsyncStorage.setItem(PIN_HASH_KEY, hash);
-    } catch {
-      // ignore
-    }
+    } catch {}
   } else {
-    // No SecureStore – use AsyncStorage as a fallback.
-    try {
-      await AsyncStorage.setItem(PIN_HASH_KEY, hash);
-    } catch {
-      // ignore
+    if (SecureStore) {
+      try { await SecureStore.setItemAsync(PIN_HASH_KEY, hash); } catch {}
     }
+    try { await AsyncStorage.setItem(PIN_HASH_KEY, hash); } catch {}
   }
 
   await setFailedAttempts(0);
@@ -181,6 +179,7 @@ export async function clearPin() {
     }
     try {
       await AsyncStorage.removeItem(PIN_HASH_KEY);
+      await AsyncStorage.removeItem(PIN_SALT_KEY);
     } catch {
       // ignore
     }

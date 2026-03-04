@@ -83,7 +83,7 @@ export default function UnlockScreen({ onUnlock, onLockout }) {
     setPin('');
     if (left <= 0) {
       await pinService.clearPin();
-      if (onLockout) onLockout();
+      if (onLockout) await onLockout();
     } else {
       Alert.alert(
         "Noto'g'ri PIN",
